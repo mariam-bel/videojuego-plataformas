@@ -14,6 +14,15 @@ public class Caer implements Disposable {
     Rectangle bounds;
     float velocityY = -2f;
     private int tipo;
+    private boolean colisionado = false;
+
+    public boolean yaColisionado() {
+        return colisionado;
+    }
+
+    public void marcarColisionado() {
+        colisionado = true;
+    }
 
     public Caer(float x, float y) {
         tipo = MathUtils.random(1,3);

@@ -19,6 +19,7 @@ public class personaje implements Disposable {
     float stateTime = 0f;
     Rectangle bounds;
     float velocityY = 0;
+    float velocityX = 3.5f;
     float gravity = -20f;
     boolean parado = false;
     boolean caminando = false;
@@ -33,11 +34,37 @@ public class personaje implements Disposable {
     TextureRegion saltandoIzquierda;
     enum Direccion {Derecha, Izquierda};
     Direccion direccion;
+    private boolean controlesInvertidos = false;
+    private int vida = 10;
+    private boolean invulnerable = false;
+    private  float tiempoInvulnerable = 0f;
+    private final float duracionInvulnerable = 1f;
+
+    public void quitarVida() {
+        if (!invulnerable) {
+            vida--;
+            System.out.println("Vida restante: "+vida);
+            invulnerable = true;
+            tiempoInvulnerable = 0f;
+        }
+    }
+
+    public int getVida() {
+        return vida;
+    }
+
+    public void alternarControles() {
+        controlesInvertidos = !controlesInvertidos;
+    }
 
     public void montar(Caer pez) {
         plataforma = pez;
         parado = true;
         velocityY = 0;
+    }
+
+    public float getVelocityY() {
+        return velocityY;
     }
 
     public float getX(){
@@ -63,6 +90,11 @@ public class personaje implements Disposable {
         }
     }
 
+    public void rebotar(){
+        velocityY = 3.5f;
+        parado = false;
+    }
+
     public personaje(float x, float y) {
         spriteDerecha = new Texture("cat_sprite_scaled_transparent.png");
         spriteIzquierda = new Texture("gato_caminando_izquierda_flipped_360x360.png");
@@ -83,36 +115,57 @@ public class personaje implements Disposable {
         caminarIzquierda = new Animation<TextureRegion>(0.1f, framesIzquierda);
         caminarIzquierda.setPlayMode(Animation.PlayMode.LOOP);
         bounds = new Rectangle(x,y,ancho,alto);
+        direccion = Direccion.Derecha;
     }
     public void actualizarCaminata(float delta) {
         if(plataforma != null) {
-            bounds.x = plataforma.getBounds().x;
-            bounds.y = plataforma.getBounds().y + plataforma.getBounds().height;
+            if (bounds.overlaps(plataforma.getBounds())){
+                bounds.x += (plataforma.getBounds().x-bounds.x)*5f*delta;
+                bounds.y = plataforma.getBounds().y + plataforma.getBounds().height;
+                parado = true;
+            } else {
+                plataforma = null;
+                parado = false;
+            }
         }
 
-        if (!parado || plataforma == null) {
+        if ((!parado || plataforma == null) && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            velocityY = 4.5f;
+            parado = false;
             plataforma = null;
         }
 
         caminando = false;
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            bounds.x -= 2f * delta;
-            caminando = true;
-            direccion = Direccion.Izquierda;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            bounds.x += 2f * delta;
-            caminando = true;
-            direccion = Direccion.Derecha;
+        if (!controlesInvertidos){
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                bounds.x -= velocityX * delta;
+                caminando = true;
+                direccion = Direccion.Izquierda;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                bounds.x += 2f * delta;
+                caminando = true;
+                direccion = Direccion.Derecha;
+            }
+        }else {
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                bounds.x -= velocityX * delta;
+                caminando = true;
+                direccion = Direccion.Derecha;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                bounds.x += 2f * delta;
+                caminando = true;
+                direccion = Direccion.Izquierda;
+            }
         }
         velocityY += gravity*delta;
         bounds.y += velocityY*delta;
-        if (parado && Gdx.input.isKeyPressed(Input.Keys.SPACE)){
-            velocityY = 4f;
-            bounds.y = 2f;
+        if (parado && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            velocityY = 4.5f;
             parado = false;
         }
-        velocityY += -8f*delta;
+        /*velocityY += -8f*delta;*/
 
         if (bounds.y <= nivelSuelo){
             bounds.y = nivelSuelo;
@@ -122,18 +175,27 @@ public class personaje implements Disposable {
         if (caminando) {
             stateTime += delta;
         }
+        if (invulnerable) {
+            tiempoInvulnerable += delta;
+            if (tiempoInvulnerable >= duracionInvulnerable) {
+                invulnerable = false;
+            }
+        }
         TextureRegion[] framesDerecha = new TextureRegion[3];
     }
     public void render(SpriteBatch batch) {
         TextureRegion frame;
-        if (caminando) {
-            frame = (direccion == Direccion.Derecha) ? caminarDerecha.getKeyFrame(stateTime) : caminarIzquierda.getKeyFrame(stateTime);
-        } else if (parado) {
-            frame = (direccion == Direccion.Derecha) ? quietoDerecha : quietoIzquierda;
-        }else {
+        if (!parado) {
             frame = (direccion == Direccion.Derecha) ? saltandoDerecha : saltandoIzquierda;
+        } else if (caminando) {
+            frame = (direccion == Direccion.Derecha) ? caminarDerecha.getKeyFrame(stateTime) : caminarIzquierda.getKeyFrame(stateTime);
+        }else {
+            frame = (direccion == Direccion.Derecha) ? quietoDerecha : quietoIzquierda;
         }
-        batch.draw(frame,bounds.x,bounds.y,(frame == saltandoDerecha || frame == saltandoIzquierda) ? 1.5f : bounds.width, (frame == saltandoDerecha || frame == saltandoIzquierda) ? 2f : bounds.height);
+        if (invulnerable && ((int)(tiempoInvulnerable*10)%2 == 0)){
+            return;
+        }
+        batch.draw(frame,bounds.x,bounds.y,(frame == saltandoDerecha || frame == saltandoIzquierda) ? 2 : bounds.width, (frame == saltandoDerecha || frame == saltandoIzquierda) ? 2.5f : bounds.height);
     }
     @Override
     public void dispose() {

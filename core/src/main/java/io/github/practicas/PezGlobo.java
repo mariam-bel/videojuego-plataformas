@@ -15,7 +15,7 @@ public class PezGlobo implements Disposable {
     public PezGlobo(float x, float y) {
         texture = new Texture("kaboom.png");
         position = new Vector2(x,y);
-
+        cont++;
         if (cont % 5 == 0) {
             duracion = 0.2f;
         }

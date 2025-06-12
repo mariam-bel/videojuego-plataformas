@@ -9,6 +9,7 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
@@ -29,6 +30,7 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
     Array<Caer> peces;
     Fondo fondo;
     Array<PezGlobo> explosion;
+    BitmapFont font;
 
     @Override
     public void create() {
@@ -45,6 +47,7 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
         personaje = new personaje(0,0);
         peces = new Array<>();
         explosion = new Array<>();
+        font = new BitmapFont();
     }
 
     @Override
@@ -58,9 +61,9 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
         input();
         logic();
         personaje.actualizarCaminata(delta);
+        ScreenUtils.clear(Color.BLACK);
         viewport.apply();
         spriteBatch.setProjectionMatrix(viewport.getCamera().combined);
-        ScreenUtils.clear(Color.BLACK);
         spriteBatch.begin();
         fondo.render(spriteBatch,delta);
         personaje.render(spriteBatch);
@@ -86,7 +89,33 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
 
     private void logic() {
         float delta = Gdx.graphics.getDeltaTime();
-
+        for (int i = peces.size-1; i>= 0; i--){
+            Caer pez = peces.get(i);
+            pez.actualizar(delta);
+            if (pez.fueraPantalla()) {
+                pez.dispose();
+                peces.removeIndex(i);
+            }
+        }
+        for (int i = peces.size-1; i >= 0 ; i--) {
+            Caer pez = peces.get(i);
+            Rectangle pies = new Rectangle(personaje.getBounds().x,personaje.getBounds().y,personaje.getBounds().width,0.2f);
+            if (!pez.yaColisionado() && pies.overlaps(pez.getBounds()) && personaje.getVelocityY() <= 0) {
+                pez.marcarColisionado();
+                if (pez.getTipo()==2) {
+                    explosion.add(new PezGlobo(pez.bounds.x, pez.bounds.y));
+                    personaje.quitarVida();
+                    personaje.rebotar();
+                } else if (pez.getTipo() == 1) {
+                    personaje.alternarControles();
+                    personaje.montar(pez);
+                } else {
+                    personaje.montar(pez);
+                }
+                pez.dispose();
+                peces.removeIndex(i);
+            }
+        }
         if (MathUtils.randomBoolean(0.015f)) {
             boolean coinciden = false;
             float nuevoX = MathUtils.random(0f, viewport.getWorldWidth()-1f);
@@ -98,26 +127,6 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
             }
             if (!coinciden){
             peces.add(new Caer(nuevoX,viewport.getWorldHeight()));
-            }
-        }
-        for (int i = peces.size-1; i >= 0 ; i--) {
-            Caer pez = peces.get(i);
-            if (personaje.getBounds().overlaps(pez.bounds)) {
-                if (pez.getTipo()==2) {
-                    explosion.add(new PezGlobo(pez.bounds.x, pez.bounds.y));
-                } else {
-                    personaje.montar(pez);
-                }
-                pez.dispose();
-                peces.removeIndex(i);
-            }
-        }
-        for (int i = peces.size-1; i>= 0; i--){
-            Caer pez = peces.get(i);
-            pez.actualizar(delta);
-            if (pez.fueraPantalla()) {
-                pez.dispose();
-                peces.removeIndex(i);
             }
         }
     }
@@ -135,11 +144,12 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
     @Override
     public void dispose() {
         music.dispose();
-        spriteBatch.dispose();
         fondo.dispose();
         personaje.dispose();
         for (Caer p:peces) {
             p.dispose();
         }
+        font.dispose();
+        spriteBatch.dispose();
     }
 }
