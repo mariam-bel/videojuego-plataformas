@@ -5,6 +5,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -23,6 +24,8 @@ public class Juego  implements Screen {
         OrthographicCamera camera;
         FitViewport viewport;
         Music music;
+        Music cascada;
+        long idCascada;
         SpriteBatch spriteBatch;
         Sprite bucketSprite;
         Vector2 touchPos;
@@ -43,11 +46,18 @@ public class Juego  implements Screen {
             viewport = new FitViewport(10, 7.5f,camera);
             fondo = new Fondo();
             music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+            music.setLooping(true);
+            music.setVolume(0.5f);
+            music.play();
+            cascada = Gdx.audio.newMusic(Gdx.files.internal("cascada.mp3"));
+            cascada.setVolume(0.4f);
             spriteBatch = new SpriteBatch();
             touchPos = new Vector2();
             music.setLooping(true);
             music.setVolume(.5f);
             music.play();
+            cascada.setLooping(true);
+            cascada.play();
             personaje = new personaje(0,0);
             peces = new Array<>();
             explosion = new Array<>();
@@ -105,6 +115,8 @@ public class Juego  implements Screen {
         if (!terminar && personaje.getVida() <= 0){
             terminar = true;
             juego.setScreen(new GameOver(juego));
+            music.stop();
+            cascada.stop();
             dispose();
         }
     }
@@ -175,6 +187,7 @@ public class Juego  implements Screen {
     @Override
         public void dispose() {
             music.dispose();
+            cascada.dispose();
             fondo.dispose();
             personaje.dispose();
             for (Caer p:peces) {

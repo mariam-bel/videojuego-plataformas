@@ -2,6 +2,7 @@ package io.github.practicas;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -40,6 +41,8 @@ public class personaje implements Disposable {
     private boolean invulnerable = false;
     private  float tiempoInvulnerable = 0f;
     private final float duracionInvulnerable = 1f;
+    private Sound sound;
+
 
     public void quitarVida() {
         if (!invulnerable) {
@@ -101,6 +104,7 @@ public class personaje implements Disposable {
     }
 
     public personaje(float x, float y) {
+        sound = Gdx.audio.newSound(Gdx.files.internal("salto.mp3"));
         spriteDerecha = new Texture("cat_sprite_scaled_transparent.png");
         spriteIzquierda = new Texture("gato_caminando_izquierda_flipped_360x360.png");
         quietoDerecha = new TextureRegion(spriteDerecha,0,0,360,360);
@@ -138,6 +142,7 @@ public class personaje implements Disposable {
             velocityY = 4.5f;
             parado = false;
             plataforma = null;
+            sound.play();
         }
 
         caminando = false;
@@ -208,5 +213,6 @@ public class personaje implements Disposable {
         saltoIzquierda.dispose();
         spriteDerecha.dispose();
         spriteIzquierda.dispose();
+        sound.dispose();
     }
 }
