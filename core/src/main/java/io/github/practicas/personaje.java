@@ -35,7 +35,8 @@ public class personaje implements Disposable {
     enum Direccion {Derecha, Izquierda};
     Direccion direccion;
     private boolean controlesInvertidos = false;
-    private int vida = 10;
+    private int vida = 3;
+    private int vidaMaxima = 3;
     private boolean invulnerable = false;
     private  float tiempoInvulnerable = 0f;
     private final float duracionInvulnerable = 1f;
@@ -93,6 +94,10 @@ public class personaje implements Disposable {
     public void rebotar(){
         velocityY = 3.5f;
         parado = false;
+    }
+
+    public int getVidaMaxima(){
+        return vidaMaxima;
     }
 
     public personaje(float x, float y) {
