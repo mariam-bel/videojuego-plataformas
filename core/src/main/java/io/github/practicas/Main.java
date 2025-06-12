@@ -20,8 +20,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class Main extends ApplicationAdapter implements ApplicationListener {
     OrthographicCamera camera;
-    final float anchoMundo = 10;
-    final float altoMundo = 7.5f;
     FitViewport viewport;
     Music music;
     SpriteBatch spriteBatch;
@@ -30,12 +28,13 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
     personaje personaje;
     Array<Caer> peces;
     Fondo fondo;
+    Array<PezGlobo> explosion;
 
     @Override
     public void create() {
         camera = new OrthographicCamera();
-        camera.setToOrtho(false,anchoMundo,altoMundo);
-        viewport = new FitViewport(anchoMundo, altoMundo,camera);
+        camera.setToOrtho(false,8,8);
+        viewport = new FitViewport(10, 7.5f,camera);
         fondo = new Fondo();
         music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
         spriteBatch = new SpriteBatch();
@@ -45,6 +44,7 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
         music.play();
         personaje = new personaje(0,0);
         peces = new Array<>();
+        explosion = new Array<>();
     }
 
     @Override
@@ -67,26 +67,54 @@ public class Main extends ApplicationAdapter implements ApplicationListener {
         for (Caer p:peces) {
             p.render(spriteBatch);
         }
+        for (PezGlobo pezGlobo:explosion){
+            pezGlobo.render(spriteBatch);
+        }
         spriteBatch.end();
+        for (int i = explosion.size-1; i>=0; i--) {
+            PezGlobo pezGlobo = explosion.get(i);
+            pezGlobo.actualizar(delta);
+            if (pezGlobo.terminado()) {
+                pezGlobo.dispose();
+                explosion.removeIndex(i);
+            }
+        }
     }
 
     private void input() {
     }
 
     private void logic() {
-        float worldWidth = viewport.getWorldWidth();
-        float worldHeight = viewport.getWorldHeight();
         float delta = Gdx.graphics.getDeltaTime();
 
-
         if (MathUtils.randomBoolean(0.015f)) {
-            float x = MathUtils.random(0f, viewport.getWorldWidth()-1f);
-            peces.add(new Caer(x,viewport.getWorldHeight()));
+            boolean coinciden = false;
+            float nuevoX = MathUtils.random(0f, viewport.getWorldWidth()-1f);
+            for (Caer pez:peces) {
+                if (Math.abs(pez.bounds.x-nuevoX)<1f){
+                    coinciden = true;
+                    break;
+                }
+            }
+            if (!coinciden){
+            peces.add(new Caer(nuevoX,viewport.getWorldHeight()));
+            }
         }
-
+        for (int i = peces.size-1; i >= 0 ; i--) {
+            Caer pez = peces.get(i);
+            if (personaje.getBounds().overlaps(pez.bounds)) {
+                if (pez.getTipo()==2) {
+                    explosion.add(new PezGlobo(pez.bounds.x, pez.bounds.y));
+                } else {
+                    personaje.montar(pez);
+                }
+                pez.dispose();
+                peces.removeIndex(i);
+            }
+        }
         for (int i = peces.size-1; i>= 0; i--){
             Caer pez = peces.get(i);
-            pez.actualizar(Gdx.graphics.getDeltaTime());
+            pez.actualizar(delta);
             if (pez.fueraPantalla()) {
                 pez.dispose();
                 peces.removeIndex(i);

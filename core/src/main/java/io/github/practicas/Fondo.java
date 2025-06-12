@@ -9,33 +9,34 @@ import com.badlogic.gdx.utils.Disposable;
 
 public class Fondo implements Disposable {
     private Animation<TextureRegion> animacion;
-    private float stateTime = 0f;
-    private Texture fondoSheet;
-    private int cant = 3;
+    private TextureRegion[] fondos;
+    private float tiempo = 0f;
+    private float duracion = 0.3f;
 
     public Fondo() {
-        fondoSheet = new Texture(Gdx.files.internal("fondo.png"));
-        int anchoFrame = fondoSheet.getWidth();
-        int altoFrame = fondoSheet.getHeight();
-        TextureRegion[][] tmp = TextureRegion.split(fondoSheet,anchoFrame,altoFrame);
-        TextureRegion[] frames = new TextureRegion[cant];
-        int index = 0;
-        for (int i = 0; i < 1; i++) {
-            for (int j = 0; j < cant; j++) {
-                frames[j] = tmp[0][j];
-            }
-        }
-        animacion = new Animation<>(0.1f, frames);
+        fondos = new TextureRegion[] {
+            new TextureRegion(new Texture(Gdx.files.internal("fondo1.png"))),
+            new TextureRegion(new Texture(Gdx.files.internal("fondo2.png"))),
+            new TextureRegion(new Texture(Gdx.files.internal("fondo3.png")))
+        };
+        animacion = new Animation<>(0.2f,fondos);
         animacion.setPlayMode(Animation.PlayMode.LOOP);
     }
 
     public void render(SpriteBatch batch, float delta) {
-        stateTime += delta;
-        TextureRegion frameActual = animacion.getKeyFrame(stateTime);
-        batch.draw(frameActual,0,0, 10, 7.5f);
+        tiempo+=delta;
+        TextureRegion frameActual = animacion.getKeyFrame(tiempo,true);
+        float imagenAncho = frameActual.getRegionWidth();
+        float imagenAlto = frameActual.getRegionHeight();
+        float proporcion = imagenAncho/imagenAlto;
+        float altoDeseado = 7.5f;
+        float anchoDeseado = proporcion*altoDeseado;
+        batch.draw(frameActual,0f,0f,10,7.5f);
     }
 
     public void dispose(){
-        fondoSheet.dispose();
+        for (TextureRegion fondo:fondos){
+            fondo.getTexture().dispose();
+        }
     }
 }

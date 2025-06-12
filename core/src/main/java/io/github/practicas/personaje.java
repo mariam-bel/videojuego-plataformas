@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.math.Rectangle;
 
 public class personaje implements Disposable {
+    private Caer plataforma = null;
     Texture spriteDerecha;
     Texture spriteIzquierda;
     Animation<TextureRegion> caminarDerecha;
@@ -24,16 +25,53 @@ public class personaje implements Disposable {
     private float nivelSuelo = 0.3f;
     private float ancho = 1.0f;
     private float alto = 1.2f;
-    TextureRegion quieto;
-    TextureRegion saltando;
+    TextureRegion quietoDerecha;
+    TextureRegion quietoIzquierda;
+    Texture saltoDerecha;
+    Texture saltoIzquierda;
+    TextureRegion saltandoDerecha;
+    TextureRegion saltandoIzquierda;
     enum Direccion {Derecha, Izquierda};
     Direccion direccion;
 
+    public void montar(Caer pez) {
+        plataforma = pez;
+        parado = true;
+        velocityY = 0;
+    }
+
+    public float getX(){
+        return bounds.x;
+    }
+
+    public void setX(float x) {
+        bounds.x = x;
+    }
+
+    public Rectangle getBounds() {
+        return bounds;
+    }
+
+    public boolean estaParado() {
+        return parado;
+    }
+
+    public void saltar() {
+        if (parado){
+            velocityY = 4f;
+            parado = false;
+        }
+    }
+
     public personaje(float x, float y) {
-        spriteDerecha = new Texture("personaje-gato_redimensionado.png");
-        spriteIzquierda = new Texture("personaje-gato2.png");
-        quieto = new TextureRegion(spriteDerecha,0,0,360,500);
-        saltando = new TextureRegion(spriteDerecha, 5,5,360,360);
+        spriteDerecha = new Texture("cat_sprite_scaled_transparent.png");
+        spriteIzquierda = new Texture("gato_caminando_izquierda_flipped_360x360.png");
+        quietoDerecha = new TextureRegion(spriteDerecha,0,0,360,360);
+        quietoIzquierda = new TextureRegion(spriteIzquierda,0,0,360,360);
+        saltoDerecha = new Texture("saltoDerecha.png");
+        saltoIzquierda = new Texture("saltoIzquierda.png");
+        saltandoDerecha = new TextureRegion(saltoDerecha);
+        saltandoIzquierda = new TextureRegion(saltoIzquierda);
         TextureRegion[] framesDerecha = new TextureRegion[3];
         TextureRegion[] framesIzquierda = new TextureRegion[3];
         for (int i = 0; i < 3; i++) {
@@ -47,12 +85,22 @@ public class personaje implements Disposable {
         bounds = new Rectangle(x,y,ancho,alto);
     }
     public void actualizarCaminata(float delta) {
+        if(plataforma != null) {
+            bounds.x = plataforma.getBounds().x;
+            bounds.y = plataforma.getBounds().y + plataforma.getBounds().height;
+        }
+
+        if (!parado || plataforma == null) {
+            plataforma = null;
+        }
+
         caminando = false;
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
             bounds.x -= 2f * delta;
             caminando = true;
             direccion = Direccion.Izquierda;
-        } if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
             bounds.x += 2f * delta;
             caminando = true;
             direccion = Direccion.Derecha;
@@ -74,24 +122,23 @@ public class personaje implements Disposable {
         if (caminando) {
             stateTime += delta;
         }
+        TextureRegion[] framesDerecha = new TextureRegion[3];
     }
     public void render(SpriteBatch batch) {
         TextureRegion frame;
         if (caminando) {
-            if (direccion==Direccion.Derecha){
-            frame = caminarDerecha.getKeyFrame(stateTime);
-            }else {
-            frame = caminarIzquierda.getKeyFrame(stateTime);
-            }
+            frame = (direccion == Direccion.Derecha) ? caminarDerecha.getKeyFrame(stateTime) : caminarIzquierda.getKeyFrame(stateTime);
         } else if (parado) {
-            frame = quieto;
+            frame = (direccion == Direccion.Derecha) ? quietoDerecha : quietoIzquierda;
         }else {
-            frame = saltando;
+            frame = (direccion == Direccion.Derecha) ? saltandoDerecha : saltandoIzquierda;
         }
-        batch.draw(frame, bounds.x, bounds.y, bounds.width, bounds.height);
+        batch.draw(frame,bounds.x,bounds.y,(frame == saltandoDerecha || frame == saltandoIzquierda) ? 1.5f : bounds.width, (frame == saltandoDerecha || frame == saltandoIzquierda) ? 2f : bounds.height);
     }
     @Override
     public void dispose() {
+        saltoDerecha.dispose();
+        saltoIzquierda.dispose();
         spriteDerecha.dispose();
         spriteIzquierda.dispose();
     }

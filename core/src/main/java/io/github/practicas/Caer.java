@@ -13,13 +13,14 @@ public class Caer implements Disposable {
     Texture texture;
     Rectangle bounds;
     float velocityY = -2f;
+    private int tipo;
 
     public Caer(float x, float y) {
-        int indice = MathUtils.random(1,2);
-        texture = new Texture(Gdx.files.internal("pez"+indice+".png"));
+        tipo = MathUtils.random(1,3);
+        texture = new Texture(Gdx.files.internal("pez"+tipo+".png"));
         float ancho;
         float alto;
-        if (indice==2){
+        if (tipo==2){
             ancho = 3f;
             alto = 3f;
         } else {
@@ -32,6 +33,14 @@ public class Caer implements Disposable {
 
     public void actualizar(float delta){
         bounds.y += velocityY*delta;
+    }
+
+    public int getTipo() {
+        return tipo;
+    }
+
+    public Rectangle getBounds() {
+        return bounds;
     }
 
     public void render(SpriteBatch batch) {
