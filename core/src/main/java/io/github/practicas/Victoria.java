@@ -9,9 +9,10 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-public class Menu implements Screen {
+public class Victoria implements Screen {
     final Main juego;
     SpriteBatch batch;
     BitmapFont font;
@@ -20,7 +21,7 @@ public class Menu implements Screen {
     OrthographicCamera camera;
     FitViewport viewport;
 
-    public Menu(Main juego) {
+    public Victoria(Main juego) {
         this.juego = juego;
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 10, 7.5f);
@@ -33,8 +34,7 @@ public class Menu implements Screen {
     }
 
     @Override
-    public void show() {
-    }
+    public void show() {}
 
     @Override
     public void render(float delta) {
@@ -47,64 +47,45 @@ public class Menu implements Screen {
         shapeRenderer.setProjectionMatrix(camera.combined);
 
         float centrarX = viewport.getWorldWidth() / 2f;
-        float botonAncho = 4.5f;
+        float botonAncho = 5f;
         float botonAlto = 1.2f;
-        float playY = 4f;
-        float exitY = 2f;
+        float botonY = 2f;
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(Color.LIGHT_GRAY);
-        shapeRenderer.rect(centrarX - botonAncho / 2f, playY, botonAncho, botonAlto);
-        shapeRenderer.rect(centrarX - botonAncho / 2f, exitY, botonAncho, botonAlto);
+        shapeRenderer.setColor(Color.DARK_GRAY);
+        shapeRenderer.rect(centrarX - botonAncho / 2f, botonY, botonAncho, botonAlto);
         shapeRenderer.end();
 
         batch.begin();
         font.setColor(Color.WHITE);
 
-        layout.setText(font, "¿PLAY?");
-        font.draw(batch, layout, centrarX - layout.width / 2f, 7);
+        layout.setText(font, "¡HAS GANADO!");
+        font.draw(batch, layout, centrarX - layout.width / 2f, 5.5f);
 
-        layout.setText(font, "YES");
-        font.draw(batch, "YES", centrarX - layout.width / 2f, playY + botonAlto / 2f + layout.height / 2f);
-        layout.setText(font, "NO");
-        font.draw(batch, "NO", centrarX - layout.width / 2f, exitY + botonAlto / 2f + layout.height / 2f);
+        layout.setText(font, "OTRA");
+        font.draw(batch, "OTRA",
+            centrarX - layout.width / 2f,
+            botonY + botonAlto / 2f + layout.height / 2f);
+
         batch.end();
 
         if (Gdx.input.justTouched()) {
             float x = viewport.unproject(new com.badlogic.gdx.math.Vector3(Gdx.input.getX(), Gdx.input.getY(), 0)).x;
             float y = viewport.unproject(new com.badlogic.gdx.math.Vector3(Gdx.input.getX(), Gdx.input.getY(), 0)).y;
-            if (x > centrarX - botonAncho / 2f && x < centrarX + botonAncho / 2f) {
-                if (y > playY && y < playY + botonAlto) {
-                    juego.setScreen(new Juego(juego));
-                    dispose();
-                } else if (y > exitY && y < exitY + botonAlto) {
-                    Gdx.app.exit();
-                }
+            if (x > centrarX - botonAncho / 2f && x < centrarX + botonAncho / 2f && y > botonY && y < botonY + botonAlto) {
+                juego.setScreen(new Juego(juego));
+                dispose();
             }
         }
     }
 
-    @Override
-    public void resize(int width, int height) {
-        viewport.update(width, height, true);
-    }
-
-    @Override
-    public void pause() {
-    }
-
-    @Override
-    public void resume() {
-    }
-
-    @Override
-    public void hide() {
-    }
-
-    @Override
-    public void dispose() {
-        batch.dispose();
+    @Override public void resize(int width, int height) {}
+    @Override public void pause() {}
+    @Override public void resume() {}
+    @Override public void hide() {}
+    @Override public void dispose() {
         font.dispose();
-        shapeRenderer.dispose();
+        batch.dispose();
     }
 }
+

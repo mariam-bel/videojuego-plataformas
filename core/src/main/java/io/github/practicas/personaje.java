@@ -43,7 +43,6 @@ public class personaje implements Disposable {
     private final float duracionInvulnerable = 1f;
     private Sound sound;
 
-
     public void quitarVida() {
         if (!invulnerable) {
             vida--;
@@ -64,6 +63,7 @@ public class personaje implements Disposable {
     public void montar(Caer pez) {
         plataforma = pez;
         parado = true;
+        bounds.y = pez.getBounds().y + pez.getBounds().height;
         velocityY = 0;
     }
 
@@ -72,7 +72,7 @@ public class personaje implements Disposable {
     }
 
     public float getX(){
-        return bounds.x;
+        return bounds.getX();
     }
 
     public void setX(float x) {
@@ -174,8 +174,9 @@ public class personaje implements Disposable {
         if (parado && Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             velocityY = 4.5f;
             parado = false;
+            plataforma = null;
+            sound.play();
         }
-        /*velocityY += -8f*delta;*/
 
         if (bounds.y <= nivelSuelo){
             bounds.y = nivelSuelo;
@@ -190,6 +191,16 @@ public class personaje implements Disposable {
             if (tiempoInvulnerable >= duracionInvulnerable) {
                 invulnerable = false;
             }
+        }
+        if (bounds.x<0){
+            bounds.x = 0;
+        }
+        if (bounds.x+bounds.width>10f){
+            bounds.x = 10f - bounds.width;
+        }
+        if (bounds.y+bounds.height>7.5f){
+            bounds.y = 7.5f-bounds.height;
+            velocityY = 0f;
         }
         TextureRegion[] framesDerecha = new TextureRegion[3];
     }

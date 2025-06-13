@@ -119,6 +119,13 @@ public class Juego  implements Screen {
             cascada.stop();
             dispose();
         }
+        if (!terminar && pecesCazados==10){
+            terminar = true;
+            juego.setScreen(new Victoria(juego));
+            music.stop();
+            cascada.stop();
+            dispose();
+        }
     }
 
     private void input() {
@@ -136,16 +143,18 @@ public class Juego  implements Screen {
         }
         for (int i = peces.size-1; i >= 0 ; i--) {
             Caer pez = peces.get(i);
-            Rectangle pies = new Rectangle(personaje.getBounds().x,personaje.getBounds().y,personaje.getBounds().width,0.2f);
+            Rectangle pies = new Rectangle(personaje.getX(),personaje.getBounds().y,personaje.getBounds().width,0.1f);
+            System.out.println("Posicion x personaje" + personaje.getX() + "\nPosicion y personaje" + personaje.getBounds().y);
+            System.out.println("Caja x: " + pies.x + "Caja y: " + pies.y);
             if (!pez.yaColisionado() && pies.overlaps(pez.getBounds()) && personaje.getVelocityY() <= 0) {
                 pez.marcarColisionado();
                 if (pez.getTipo()==2) {
-                    explosion.add(new PezGlobo(pez.bounds.x, pez.bounds.y));
+                    explosion.add(new PezGlobo(personaje.getBounds().x+personaje.getBounds().width/2f-0.6f, personaje.getBounds().y+personaje.getBounds().height/2f-0.6f));
                     personaje.quitarVida();
                     personaje.rebotar();
                 } else if (pez.getTipo() == 1) {
                     personaje.alternarControles();
-                    personaje.montar(pez);
+                    personaje.rebotar();
                 } else {
                     personaje.montar(pez);
                     pecesCazados++;

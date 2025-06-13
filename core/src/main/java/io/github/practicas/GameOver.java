@@ -58,11 +58,11 @@ public class GameOver implements Screen {
         batch.begin();
         font.setColor(Color.WHITE);
 
-        layout.setText(font, "LOOSER");
+        layout.setText(font, "FRACASADO");
         font.draw(batch, layout, centrarX - layout.width / 2f, 5.5f);
 
-        layout.setText(font, "AGAIN");
-        font.draw(batch, "AGAIN",
+        layout.setText(font, "OTRA");
+        font.draw(batch, "OTRA",
             centrarX - layout.width / 2f,
             botonY + botonAlto / 2f + layout.height / 2f);
 
